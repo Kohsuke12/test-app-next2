@@ -1,30 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Category } from "@/types/Category";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useSWRWithAuth } from "@/lib/swr";
 
 export default function Page() {
-  const [categories, setCategories] = useState<Category[]>([]);
   const { token } = useSupabaseSession();
 
-  useEffect(() => {
-    if (!token) return;
-
-    const fetcher = async () => {
-      const res = await fetch("/api/admin/categories", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      });
-      const { categories } = await res.json();
-      setCategories(categories);
-    };
-
-    fetcher();
-  }, [token]);
+  // SWRを使用してデータを取得
+  const { data, error, isLoading } = useSWRWithAuth('/api/admin/categories', token);
+  
+  const categories = data?.categories || [];
 
   return (
     <div className="">
@@ -36,15 +23,18 @@ export default function Page() {
       </div>
 
       <div className="">
-        {categories.map((category) => {
-          return (
-            <Link href={`/admin/categories/${category.id}`} key={category.id}>
-              <div className="border-b border-gray-300 p-4 hover:bg-gray-100 cursor-pointer">
-                <div className="text-xl font-bold">{category.name}</div>
-              </div>
-            </Link>
-          );
-        })}
+        {isLoading && <div>読み込み中...</div>}
+        {!isLoading && categories.length === 0 && <div>カテゴリがありません</div>}
+        {!isLoading &&
+          categories.map((category: Category) => {
+            return (
+              <Link href={`/admin/categories/${category.id}`} key={category.id}>
+                <div className="border-b border-gray-300 p-4 hover:bg-gray-100 cursor-pointer">
+                  <div className="text-xl font-bold">{category.name}</div>
+                </div>
+              </Link>
+            );
+          })}
       </div>
     </div>
   );

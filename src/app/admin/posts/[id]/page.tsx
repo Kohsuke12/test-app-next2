@@ -1,25 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PostForm } from "../_components/PostForm";
 import { Category } from "@/types/Category";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 import { Post } from "@/types/post";
+import { UpdatePostRequestBody } from "@/types/api";
+import { useSWRWithAuth } from "@/lib/swr";
 
 export default function Page() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [thumbnailImageKey, setThumbnailImageKey] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
   const { id } = useParams();
   const router = useRouter();
   const { token } = useSupabaseSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    // フォームのデフォルトの動作をキャンセルします。
-    e.preventDefault();
-
+  const handleSubmit = async (data: { title: string; content: string; thumbnailImageKey: string; categories: Category[] }) => {
     // 記事を作成します。
     await fetch(`/api/admin/posts/${id}`, {
       method: "PUT",
@@ -27,7 +22,12 @@ export default function Page() {
         Authorization: token!,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ title, content, thumbnailImageKey, categories }),
+      body: JSON.stringify({ 
+        title: data.title, 
+        content: data.content, 
+        thumbnailImageKey: data.thumbnailImageKey, 
+        categories: data.categories 
+      } as UpdatePostRequestBody),
     });
 
     alert("記事を更新しました。");
@@ -49,25 +49,19 @@ export default function Page() {
     router.push("/admin/posts");
   };
 
-  useEffect(() => {
-    if (!token) return;
+  // SWRを使用してデータを取得
+  const { data, error, isLoading } = useSWRWithAuth(
+    id ? `/api/admin/posts/${id}` : null,
+    token
+  );
 
-    const fetcher = async () => {
-      const res = await fetch(`/api/admin/posts/${id}`, {
-        headers: {
-          Authorization: token,
-          "Content-Type": "application/json",
-        },
-      });
-      const { post }: { post: Post } = await res.json();
-      setTitle(post.title);
-      setContent(post.content);
-      setThumbnailImageKey(post.thumbnailImageKey);
-      setCategories(post.postCategories.map((pc) => pc.category));
-    };
-
-    fetcher();
-  }, [id, token]);
+  // データが取得できたらフォームに設定
+  const defaultValues = data?.post ? {
+    title: data.post.title,
+    content: data.post.content,
+    thumbnailImageKey: data.post.thumbnailImageKey,
+    categories: data.post.postCategories.map((pc: any) => pc.category),
+  } : undefined;
 
   return (
     <div className="container mx-auto px-4">
@@ -77,14 +71,7 @@ export default function Page() {
 
       <PostForm
         mode="edit"
-        title={title}
-        setTitle={setTitle}
-        content={content}
-        setContent={setContent}
-        thumbnailImageKey={thumbnailImageKey}
-        setThumbnailImageKey={setThumbnailImageKey}
-        categories={categories}
-        setCategories={setCategories}
+        defaultValues={defaultValues}
         onSubmit={handleSubmit}
         onDelete={handleDeletePost}
       />

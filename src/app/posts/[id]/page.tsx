@@ -6,29 +6,21 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Post } from "@/types/post";
+import useSWR from "@/lib/swr";
 
 export default function Page() {
   // next/navigationのuseParamsを使うと、URLのパラメータを取得できます。
   const { id } = useParams();
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(false);
-
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
     null
   );
 
-  // APIでpostsを取得する処理をuseEffectで実行します。
-  useEffect(() => {
-    const fetcher = async () => {
-      setLoading(true);
-      const res = await fetch(`/api/posts/${id}`);
-      const { post } = await res.json();
-      setPost(post);
-      setLoading(false);
-    };
-
-    fetcher();
-  }, [id]);
+  // SWRを使用してデータを取得
+  const { data, error, isLoading } = useSWR(
+    id ? `/api/posts/${id}` : null
+  );
+  
+  const post = data?.post;
 
   // DBに保存しているthumbnailImageKeyを元に、Supabaseから画像のURLを取得する
   useEffect(() => {
@@ -38,7 +30,7 @@ export default function Page() {
       const {
         data: { publicUrl },
       } = await supabase.storage
-        .from("post_thumbnail")
+        .from("post-thumbnail")
         .getPublicUrl(post.thumbnailImageKey);
 
       setThumbnailImageUrl(publicUrl);
@@ -48,7 +40,7 @@ export default function Page() {
   }, [post?.thumbnailImageKey]);
 
   // 記事取得中は、読み込み中であることを表示します。
-  if (loading) {
+  if (isLoading) {
     return <div>読み込み中...</div>;
   }
 
@@ -71,7 +63,7 @@ export default function Page() {
               {new Date(post.createdAt).toLocaleDateString()}
             </div>
             <div className={classes.postCategories}>
-              {post.postCategories.map((postCategory) => {
+              {post.postCategories.map((postCategory: any) => {
                 return (
                   <div
                     key={postCategory.category.id}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { getCurrentUser } from '@/utils/supabase'
+import { UpdateCategoryRequestBody } from '@/types/api'
 
 const prisma = new PrismaClient()
 
@@ -22,17 +23,18 @@ export const GET = async (
       },
     })
 
+    await prisma.$disconnect()
+
     return NextResponse.json({ status: 'OK', category }, { status: 200 })
   } catch (error) {
+    await prisma.$disconnect()
     if (error instanceof Error)
       return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: 'Unknown error' }, { status: 400 })
   }
 }
 
-// カテゴリーの更新時に送られてくるリクエストのbodyの型
-interface UpdateCategoryRequestBody {
-  name: string
-}
+
 
 export const PUT = async (
   request: NextRequest,
@@ -60,11 +62,15 @@ export const PUT = async (
       },
     })
 
+    await prisma.$disconnect()
+
     // レスポンスを返す
     return NextResponse.json({ status: 'OK', category }, { status: 200 })
   } catch (error) {
+    await prisma.$disconnect()
     if (error instanceof Error)
       return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: 'Unknown error' }, { status: 400 })
   }
 }
 
@@ -88,10 +94,14 @@ export const DELETE = async (
       },
     })
 
+    await prisma.$disconnect()
+
     // レスポンスを返す
     return NextResponse.json({ status: 'OK' }, { status: 200 })
   } catch (error) {
+    await prisma.$disconnect()
     if (error instanceof Error)
       return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: 'Unknown error' }, { status: 400 })
   }
 }

@@ -1,23 +1,16 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PostForm } from '../_components/PostForm'
 import { Category } from '@/types/Category'
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
+import { CreatePostRequestBody } from '@/types/api'
 
 export default function Page() {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [thumbnailImageKey, setThumbnailImageKey] = useState('')
-  const [categories, setCategories] = useState<Category[]>([])
   const router = useRouter()
   const { token } = useSupabaseSession()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    // フォームのデフォルトの動作をキャンセルします。
-    e.preventDefault()
-
+  const handleSubmit = async (data: { title: string; content: string; thumbnailImageKey: string; categories: Category[] }) => {
     // 記事を作成します。
     const res = await fetch('/api/admin/posts', {
       method: 'POST',
@@ -25,7 +18,12 @@ export default function Page() {
         'Content-Type': 'application/json',
         Authorization: token!,
       },
-      body: JSON.stringify({ title, content, thumbnailImageKey, categories }),
+      body: JSON.stringify({ 
+        title: data.title, 
+        content: data.content, 
+        thumbnailImageKey: data.thumbnailImageKey, 
+        categories: data.categories 
+      } as CreatePostRequestBody),
     })
 
     // レスポンスから作成した記事のIDを取得します。
@@ -45,14 +43,6 @@ export default function Page() {
 
       <PostForm
         mode="new"
-        title={title}
-        setTitle={setTitle}
-        content={content}
-        setContent={setContent}
-        thumbnailImageKey={thumbnailImageKey}
-        setThumbnailImageKey={setThumbnailImageKey}
-        categories={categories}
-        setCategories={setCategories}
         onSubmit={handleSubmit}
       />
     </div>

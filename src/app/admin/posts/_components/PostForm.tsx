@@ -4,37 +4,44 @@ import { CategoriesSelect } from './CategoriesSelect'
 import { v4 as uuidv4 } from 'uuid' // 固有のIDを生成するライブラリです。`npm install uuid @types/uuid` でインストールしてください。
 import { supabase } from '@/utils/supabase'
 import Image from 'next/image'
+import { useForm, Controller } from 'react-hook-form'
+
+interface PostFormData {
+  title: string
+  content: string
+  thumbnailImageKey: string
+  categories: Category[]
+}
 
 interface Props {
   mode: 'new' | 'edit'
-  title: string
-  setTitle: (title: string) => void
-  content: string
-  setContent: (content: string) => void
-  thumbnailImageKey: string
-  setThumbnailImageKey: (thumbnailImageKey: string) => void
-  categories: Category[]
-  setCategories: (categories: Category[]) => void
-  onSubmit: (e: React.FormEvent) => void
+  defaultValues?: PostFormData
+  onSubmit: (data: PostFormData) => void
   onDelete?: () => void
 }
 
 export const PostForm: React.FC<Props> = ({
   mode,
-  title,
-  setTitle,
-  content,
-  setContent,
-  thumbnailImageKey,
-  setThumbnailImageKey,
-  categories,
-  setCategories,
+  defaultValues,
   onSubmit,
   onDelete,
 }) => {
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
     null,
   )
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<PostFormData>({
+    defaultValues,
+  })
+
+  const thumbnailImageKey = watch('thumbnailImageKey')
 
   const handleImageChange = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -52,7 +59,7 @@ export const PostForm: React.FC<Props> = ({
 
     // Supabase Storageに画像をアップロード
     const { data, error } = await supabase.storage
-      .from('post_thumbnail')
+      .from('post-thumbnail')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
@@ -65,7 +72,7 @@ export const PostForm: React.FC<Props> = ({
     }
 
     // data.pathに画像のパスが格納されているので、thumbnailImageKeyに格納
-    setThumbnailImageKey(data.path)
+    setValue('thumbnailImageKey', data.path)
   }
 
   // DBに保存しているthumbnailImageKeyを元に、Supabaseから画像のURLを取得する
@@ -76,7 +83,7 @@ export const PostForm: React.FC<Props> = ({
       const {
         data: { publicUrl },
       } = await supabase.storage
-        .from('post_thumbnail')
+        .from('post-thumbnail')
         .getPublicUrl(thumbnailImageKey)
 
       setThumbnailImageUrl(publicUrl)
@@ -86,7 +93,7 @@ export const PostForm: React.FC<Props> = ({
   }, [thumbnailImageKey])
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label
           htmlFor="title"
@@ -97,10 +104,12 @@ export const PostForm: React.FC<Props> = ({
         <input
           type="text"
           id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-200 p-3"
+          {...register('title', { required: 'タイトルは必須です' })}
         />
+        {errors.title && (
+          <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+        )}
       </div>
       <div>
         <label
@@ -111,10 +120,12 @@ export const PostForm: React.FC<Props> = ({
         </label>
         <textarea
           id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-200 p-3"
+          {...register('content', { required: '内容は必須です' })}
         />
+        {errors.content && (
+          <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
+        )}
       </div>
       <div>
         <label
@@ -143,16 +154,23 @@ export const PostForm: React.FC<Props> = ({
         <label className="block text-sm font-medium text-gray-700">
           カテゴリー
         </label>
-        <CategoriesSelect
-          selectedCategories={categories}
-          setSelectedCategories={setCategories}
+        <Controller
+          name="categories"
+          control={control}
+          render={({ field }) => (
+            <CategoriesSelect
+              selectedCategories={field.value || []}
+              setSelectedCategories={field.onChange}
+            />
+          )}
         />
       </div>
       <button
         type="submit"
-        className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        disabled={isSubmitting}
+        className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
       >
-        {mode === 'new' ? '作成' : '更新'}
+        {isSubmitting ? '処理中...' : mode === 'new' ? '作成' : '更新'}
       </button>
       {mode === 'edit' && (
         <button

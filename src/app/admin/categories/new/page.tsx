@@ -1,19 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CategoryForm } from "../_components/CategoryForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { CreateCategoryRequestBody } from "@/types/api";
 
 export default function Page() {
-  const [name, setName] = useState("");
   const router = useRouter();
   const { token } = useSupabaseSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    // フォームのデフォルトの動作をキャンセルします。
-    e.preventDefault();
-
+  const handleSubmit = async (data: { name: string }) => {
     // カテゴリーを作成します。
     const res = await fetch("/api/admin/categories", {
       method: "POST",
@@ -21,7 +17,7 @@ export default function Page() {
         "Content-Type": "application/json",
         Authorization: token!,
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name: data.name } as CreateCategoryRequestBody),
     });
 
     // レスポンスから作成したカテゴリーのIDを取得します。
@@ -41,8 +37,6 @@ export default function Page() {
 
       <CategoryForm
         mode="new"
-        name={name}
-        setName={setName}
         onSubmit={handleSubmit}
       />
     </div>

@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CategoryForm } from "../_components/CategoryForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { UpdateCategoryRequestBody } from "@/types/api";
+import { useSWRWithAuth } from "@/lib/swr";
 
 export default function Page() {
-  const [name, setName] = useState("");
   const { id } = useParams();
   const router = useRouter();
   const { token } = useSupabaseSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    // フォームのデフォルトの動作をキャンセルします。
-    e.preventDefault();
-
+  const handleSubmit = async (data: { name: string }) => {
     // カテゴリーを作成します。
     await fetch(`/api/admin/categories/${id}`, {
       method: "PUT",
@@ -22,7 +20,7 @@ export default function Page() {
         "Content-Type": "application/json",
         Authorization: token!,
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name: data.name } as UpdateCategoryRequestBody),
     });
 
     alert("カテゴリーを更新しました。");
@@ -44,22 +42,14 @@ export default function Page() {
     router.push("/admin/categories");
   };
 
-  useEffect(() => {
-    if (!token) return;
+  // SWRを使用してデータを取得
+  const { data, error, isLoading } = useSWRWithAuth(
+    id ? `/api/admin/categories/${id}` : null,
+    token
+  );
 
-    const fetcher = async () => {
-      const res = await fetch(`/api/admin/categories/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      });
-      const { category } = await res.json();
-      setName(category.name);
-    };
-
-    fetcher();
-  }, [id, token]);
+  // データが取得できたらフォームに設定
+  const defaultValues = data?.category ? { name: data.category.name } : undefined;
 
   return (
     <div className="container mx-auto px-4">
@@ -69,8 +59,7 @@ export default function Page() {
 
       <CategoryForm
         mode="edit"
-        name={name}
-        setName={setName}
+        defaultValues={defaultValues}
         onSubmit={handleSubmit}
         onDelete={handleDeletePost}
       />

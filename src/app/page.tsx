@@ -1,22 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import classes from "../styles/Home.module.scss";
 import { Post } from "@/types/post";
+import useSWR from "swr";
 
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { data, error, isLoading } = useSWR<{ posts: Post[] }>("/api/posts");
 
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch("api/posts");
-      const { posts } = await res.json();
-      setPosts(posts);
-    };
+  if (isLoading) {
+    return (
+      <div className="">
+        <div className={classes.container}>
+          <p>読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
-    fetcher();
-  }, []);
+  if (error) {
+    return (
+      <div className="">
+        <div className={classes.container}>
+          <p>エラーが発生しました: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const posts = data?.posts || [];
 
   return (
     <div className="">

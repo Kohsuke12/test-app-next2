@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/utils/supabase'
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
+import { CreatePostRequestBody } from '@/types/api'
 
 const prisma = new PrismaClient()
 
@@ -38,12 +39,7 @@ export const GET = async (request: NextRequest) => {
   }
 }
 
-interface CreatePostRequestBody {
-  title: string
-  content: string
-  categories: { id: number }[]
-  thumbnailImageKey: string
-}
+
 
 // POSTという命名にすることで、POSTリクエストの時にこの関数が呼ばれる
 export const POST = async (request: NextRequest, context: any) => {

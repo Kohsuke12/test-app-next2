@@ -1,32 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
 import { Post } from '@/types/post'
+import { useSWRWithAuth } from '@/lib/swr'
 
 export default function Page() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const { token } = useSupabaseSession()
 
-  useEffect(() => {
-    if (!token) return
-
-    const fetcher = async () => {
-      const res = await fetch('/api/admin/posts', {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token, // 👈 Header に token を付与。
-        },
-      })
-      const { posts } = await res.json()
-      setPosts([...posts])
-      setIsLoading(false)
-    }
-
-    fetcher()
-  }, [token])
+  // SWRを使用してデータを取得
+  const { data, error, isLoading } = useSWRWithAuth('/api/admin/posts', token)
+  
+  const posts = data?.posts || []
 
   return (
     <div className="">
@@ -41,7 +26,7 @@ export default function Page() {
         {isLoading && <div>loading...</div>}
         {!isLoading && posts.length === 0 && <div>記事がありません</div>}
         {!isLoading &&
-          posts.map((post) => {
+          posts.map((post: Post) => {
             return (
               <Link href={`/admin/posts/${post.id}`} key={post.id}>
                 <div className="border-b border-gray-300 p-4 hover:bg-gray-100 cursor-pointer">
