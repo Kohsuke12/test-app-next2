@@ -1,5 +1,8 @@
 "use client";
 
+
+//SWRWithAuth導入確認用
+
 import Link from "next/link";
 import { Category } from "@/types/Category";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";

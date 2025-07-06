@@ -1,3 +1,5 @@
+//react-hook-form導入確認用
+
 import { Category } from '@/types/Category'
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { CategoriesSelect } from './CategoriesSelect'
