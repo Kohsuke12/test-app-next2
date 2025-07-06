@@ -6,7 +6,11 @@ import { Post } from "@/types/post";
 import useSWR from "swr";
 
 export default function Home() {
-  const { data, error, isLoading } = useSWR<{ posts: Post[] }>("/api/posts");
+  const { data, error, isLoading, mutate } = useSWR<{ posts: Post[] }>("/api/posts", {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    refreshInterval: 5000, // 5秒ごとに更新
+  });
 
   if (isLoading) {
     return (
@@ -23,6 +27,12 @@ export default function Home() {
       <div className="">
         <div className={classes.container}>
           <p>エラーが発生しました: {error.message}</p>
+          <button 
+            onClick={() => mutate()} 
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            再試行
+          </button>
         </div>
       </div>
     );

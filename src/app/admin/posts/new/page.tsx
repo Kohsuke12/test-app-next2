@@ -5,34 +5,48 @@ import { PostForm } from '../_components/PostForm'
 import { Category } from '@/types/Category'
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
 import { CreatePostRequestBody } from '@/types/api'
+import { mutate } from 'swr'
 
 export default function Page() {
   const router = useRouter()
   const { token } = useSupabaseSession()
 
   const handleSubmit = async (data: { title: string; content: string; thumbnailImageKey: string; categories: Category[] }) => {
-    // 記事を作成します。
-    const res = await fetch('/api/admin/posts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token!,
-      },
-      body: JSON.stringify({ 
-        title: data.title, 
-        content: data.content, 
-        thumbnailImageKey: data.thumbnailImageKey, 
-        categories: data.categories 
-      } as CreatePostRequestBody),
-    })
+    try {
+      // 記事を作成します。
+      const res = await fetch('/api/admin/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token!,
+        },
+        body: JSON.stringify({ 
+          title: data.title, 
+          content: data.content, 
+          thumbnailImageKey: data.thumbnailImageKey, 
+          categories: data.categories 
+        } as CreatePostRequestBody),
+      })
 
-    // レスポンスから作成した記事のIDを取得します。
-    const { id } = await res.json()
+      if (!res.ok) {
+        throw new Error('記事の作成に失敗しました')
+      }
 
-    // 作成した記事の詳細ページに遷移します。
-    router.push(`/admin/posts/${id}`)
+      // レスポンスから作成した記事のIDを取得します。
+      const { id } = await res.json()
 
-    alert('記事を作成しました。')
+      // SWRのキャッシュを更新
+      mutate('/api/admin/posts')
+      mutate('/api/posts')
+
+      alert('記事を作成しました。')
+
+      // 記事一覧ページに戻ります。
+      router.push('/admin/posts')
+    } catch (error) {
+      console.error('記事作成エラー:', error)
+      alert('記事の作成に失敗しました。')
+    }
   }
 
   return (
