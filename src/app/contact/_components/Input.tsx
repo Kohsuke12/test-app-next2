@@ -18,3 +18,9 @@ export const Input: React.FC<Props> = ({ type, id, value, onChange }) => {
     />
   )
 }
+
+
+
+
+
+

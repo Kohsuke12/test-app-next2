@@ -6,8 +6,8 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Chip from "@mui/material/Chip";
 import { Category } from "@/types/Category";
-import { useEffect } from "react";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useSWRWithAuth } from "@/lib/swr";
 
 interface Props {
   selectedCategories: Category[];
@@ -18,40 +18,44 @@ export const CategoriesSelect: React.FC<Props> = ({
   selectedCategories,
   setSelectedCategories,
 }) => {
-  const [categories, setCategories] = React.useState<Category[]>([]);
-
   const { token } = useSupabaseSession();
+
+  // SWRを使用してカテゴリーデータを取得
+  const { data, error, isLoading } = useSWRWithAuth('/api/admin/categories', token);
+  
+  const categories = data?.categories || [];
 
   const handleChange = (value: number[]) => {
     value.forEach((v: number) => {
-      const isSelect = selectedCategories.some((c) => c.id === v);
+      const isSelect = selectedCategories.some((c: Category) => c.id === v);
       if (isSelect) {
-        setSelectedCategories(selectedCategories.filter((c) => c.id !== v));
+        setSelectedCategories(selectedCategories.filter((c: Category) => c.id !== v));
         return;
       }
 
-      const category = categories.find((c) => c.id === v);
+      const category = categories.find((c: Category) => c.id === v);
       if (!category) return;
       setSelectedCategories([...selectedCategories, category]);
     });
   };
 
-  useEffect(() => {
-    if (!token) return;
+  // ローディング状態の表示
+  if (isLoading) {
+    return (
+      <FormControl className="w-full">
+        <OutlinedInput placeholder="カテゴリーを読み込み中..." disabled />
+      </FormControl>
+    );
+  }
 
-    const fetcher = async () => {
-      const res = await fetch("/api/admin/categories", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      });
-      const { categories } = await res.json();
-      setCategories(categories);
-    };
-
-    fetcher();
-  }, [token]);
+  // エラー状態の表示
+  if (error) {
+    return (
+      <FormControl className="w-full">
+        <OutlinedInput placeholder="カテゴリーの読み込みに失敗しました" disabled />
+      </FormControl>
+    );
+  }
 
   return (
     <FormControl className="w-full">
@@ -68,7 +72,7 @@ export const CategoriesSelect: React.FC<Props> = ({
           </Box>
         )}
       >
-        {categories.map((category) => (
+        {categories.map((category: Category) => (
           <MenuItem key={category.id} value={category.id}>
             {category.name}
           </MenuItem>
