@@ -1,3 +1,5 @@
+//useSWRWithAuthを使うために、このファイルを作成し
+
 import useSWR, { SWRConfiguration } from 'swr'
 
 // フェッチャー関数
