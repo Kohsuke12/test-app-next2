@@ -1,3 +1,5 @@
+//SWR導入確認用
+
 import * as React from "react";
 import Box from "@mui/material/Box";
 import OutlinedInput from "@mui/material/OutlinedInput";

@@ -1,3 +1,5 @@
+//SWR導入確認用
+
 "use client";
 
 import Link from "next/link";

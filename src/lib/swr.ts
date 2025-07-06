@@ -1,4 +1,4 @@
-//useSWRWithAuthを使うために、このファイルを作成し
+//useSWRWithAuthを使うために、このファイルを作成
 
 import useSWR, { SWRConfiguration } from 'swr'
 
