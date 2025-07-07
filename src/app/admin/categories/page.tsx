@@ -1,20 +1,13 @@
 "use client";
 
-
 //SWRWithAuth導入確認用
 
 import Link from "next/link";
+import { useCategories } from "@/hooks/useCategories";
 import { Category } from "@/types/Category";
-import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
-import { useSWRWithAuth } from "@/lib/swr";
 
 export default function Page() {
-  const { token } = useSupabaseSession();
-
-  // SWRを使用してデータを取得
-  const { data, error, isLoading } = useSWRWithAuth('/api/admin/categories', token);
-  
-  const categories = data?.categories || [];
+  const { categories, error, isLoading } = useCategories();
 
   return (
     <div className="">

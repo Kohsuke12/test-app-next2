@@ -5,11 +5,14 @@ import { PostForm } from '../_components/PostForm'
 import { Category } from '@/types/Category'
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
 import { CreatePostRequestBody } from '@/types/api'
-import { mutate } from 'swr'
+import { useAdminPosts } from '@/hooks/useAdminPosts'
+import { usePosts } from '@/hooks/usePosts'
 
 export default function Page() {
   const router = useRouter()
   const { token } = useSupabaseSession()
+  const { mutate: mutateAdminPosts } = useAdminPosts()
+  const { mutate: mutatePosts } = usePosts()
 
   const handleSubmit = async (data: { title: string; content: string; thumbnailImageKey: string; categories: Category[] }) => {
     try {
@@ -36,8 +39,8 @@ export default function Page() {
       const { id } = await res.json()
 
       // SWRのキャッシュを更新
-      mutate('/api/admin/posts')
-      mutate('/api/posts')
+      mutateAdminPosts()
+      mutatePosts()
 
       alert('記事を作成しました。')
 

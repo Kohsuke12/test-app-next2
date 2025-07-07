@@ -4,15 +4,10 @@
 
 import Link from "next/link";
 import classes from "../styles/Home.module.scss";
-import { Post } from "@/types/post";
-import useSWR from "swr";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function Home() {
-  const { data, error, isLoading, mutate } = useSWR<{ posts: Post[] }>("/api/posts", {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    refreshInterval: 5000, // 5秒ごとに更新
-  });
+  const { posts, error, isLoading, mutate } = usePosts();
 
   if (isLoading) {
     return (
@@ -39,8 +34,6 @@ export default function Home() {
       </div>
     );
   }
-
-  const posts = data?.posts || [];
 
   return (
     <div className="">

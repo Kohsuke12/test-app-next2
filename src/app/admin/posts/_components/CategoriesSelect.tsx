@@ -8,8 +8,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Chip from "@mui/material/Chip";
 import { Category } from "@/types/Category";
-import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
-import { useSWRWithAuth } from "@/lib/swr";
+import { useCategories } from "@/hooks/useCategories";
 
 interface Props {
   selectedCategories: Category[];
@@ -20,12 +19,7 @@ export const CategoriesSelect: React.FC<Props> = ({
   selectedCategories,
   setSelectedCategories,
 }) => {
-  const { token } = useSupabaseSession();
-
-  // SWRを使用してカテゴリーデータを取得
-  const { data, error, isLoading } = useSWRWithAuth('/api/admin/categories', token);
-  
-  const categories = data?.categories || [];
+  const { categories, error, isLoading } = useCategories();
 
   const handleChange = (value: number[]) => {
     value.forEach((v: number) => {
