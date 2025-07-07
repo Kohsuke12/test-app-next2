@@ -8,7 +8,7 @@ import { CategoryForm } from "../_components/CategoryForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 import { UpdateCategoryRequestBody } from "@/types/api";
 import { useSWRWithAuth } from "@/lib/swr";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/app/admin/_hooks/useCategories";
 
 export default function Page() {
   const { id } = useParams();

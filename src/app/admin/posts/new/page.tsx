@@ -5,7 +5,7 @@ import { PostForm } from '../_components/PostForm'
 import { Category } from '@/types/Category'
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
 import { CreatePostRequestBody } from '@/types/api'
-import { useAdminPosts } from '@/hooks/useAdminPosts'
+import { useAdminPosts } from '@/app/admin/_hooks/useAdminPosts'
 import { usePosts } from '@/hooks/usePosts'
 
 export default function Page() {

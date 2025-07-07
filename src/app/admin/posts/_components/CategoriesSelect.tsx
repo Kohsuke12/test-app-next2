@@ -8,7 +8,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Chip from "@mui/material/Chip";
 import { Category } from "@/types/Category";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/app/admin/_hooks/useCategories";
 
 interface Props {
   selectedCategories: Category[];

@@ -10,7 +10,7 @@ import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 import { Post } from "@/types/post";
 import { UpdatePostRequestBody } from "@/types/api";
 import { useSWRWithAuth } from "@/lib/swr";
-import { useAdminPosts } from "@/hooks/useAdminPosts";
+import { useAdminPosts } from "@/app/admin/_hooks/useAdminPosts";
 import { usePosts } from "@/hooks/usePosts";
 
 export default function Page() {

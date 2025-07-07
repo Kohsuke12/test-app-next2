@@ -3,7 +3,7 @@
 //SWRWithAuth導入確認用
 
 import Link from "next/link";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/app/admin/_hooks/useCategories";
 import { Category } from "@/types/Category";
 
 export default function Page() {

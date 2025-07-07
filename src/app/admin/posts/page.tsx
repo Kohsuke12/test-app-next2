@@ -3,7 +3,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useAdminPosts } from '@/hooks/useAdminPosts'
+import { useAdminPosts } from '@/app/admin/_hooks/useAdminPosts'
 import { Post } from '@/types/post'
 
 export default function Page() {
