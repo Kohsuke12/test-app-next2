@@ -39,8 +39,6 @@ export const GET = async (request: NextRequest) => {
   }
 }
 
-
-
 // POSTという命名にすることで、POSTリクエストの時にこの関数が呼ばれる
 export const POST = async (request: NextRequest, context: any) => {
   const { currentUser, error } = await getCurrentUser(request)
@@ -60,7 +58,7 @@ export const POST = async (request: NextRequest, context: any) => {
       data: {
         title,
         content,
-        thumbnailImageKey,
+        thumbnailImageKey: thumbnailImageKey || "",
       },
     })
 
@@ -82,8 +80,12 @@ export const POST = async (request: NextRequest, context: any) => {
       id: data.id,
     })
   } catch (error) {
+    console.error('POST creation error:', error)
     if (error instanceof Error) {
       return NextResponse.json({ status: error.message }, { status: 400 })
     }
+    return NextResponse.json({ status: 'Internal Server Error' }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }

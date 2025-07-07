@@ -1,17 +1,13 @@
+//SWR導入確認用
+
 'use client'
 
 import Link from 'next/link'
-import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
+import { useAdminPosts } from '@/app/admin/_hooks/useAdminPosts'
 import { Post } from '@/types/post'
-import { useSWRWithAuth } from '@/lib/swr'
 
 export default function Page() {
-  const { token } = useSupabaseSession()
-
-  // SWRを使用してデータを取得
-  const { data, error, isLoading } = useSWRWithAuth('/api/admin/posts', token)
-  
-  const posts = data?.posts || []
+  const { posts, error, isLoading } = useAdminPosts()
 
   return (
     <div className="">

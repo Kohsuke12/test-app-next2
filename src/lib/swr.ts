@@ -1,4 +1,7 @@
+//useSWRWithAuthを使うために、このファイルを作成
+
 import useSWR, { SWRConfiguration } from 'swr'
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession'
 
 // フェッチャー関数
 const fetcher = async (url: string) => {
@@ -39,8 +42,10 @@ export const swrConfig: Omit<SWRConfiguration, 'fetcher' | 'onError'> = {
   errorRetryInterval: 5000,
 }
 
-// カスタムフック
-export const useSWRWithAuth = (url: string | null, token: string | null) => {
+// カスタムフック（トークンを内部で取得）
+export const useSWRWithAuth = (url: string | null) => {
+  const { token } = useSupabaseSession()
+  
   return useSWR(
     url && token ? [url, token] : null,
     ([url, token]) => authFetcher(url, token),
